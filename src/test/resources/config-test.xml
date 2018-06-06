@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration>
+    <lastOpenFolderPath>D:\temp\chess\sc8\Windows</lastOpenFolderPath>
+    <recent-games maxCount="3">
+        <game random-color="false">
+            <white name="Unknown" color="WHITE" time="120000"/>
+            <black name="Unknown" color="BLACK" time="120000"/>
+        </game>
+    </recent-games>
+    <engines>
+        <engine name="Stockfish 8 64" author="T. Romstad, M. Costalba, J. Kiiski, G. Linscott">
+            <local-client executable="D:\temp\chess\sc8\Windows\stockfish_8_x64.exe"/>
+            <options>
+                <string value="" default-value="" name="Debug Log File" type="STRING"/>
+                <spin value="0" default-value="0" min="-100" max="100" name="Contempt" type="SPIN"/>
+                <spin value="1" default-value="1" min="1" max="128" name="Threads" type="SPIN"/>
+                <spin value="16" default-value="16" min="1" max="1048576" name="Hash" type="SPIN"/>
+                <button name="Clear Hash" type="BUTTON"/>
+                <check value="false" default-value="false" name="Ponder" type="CHECK"/>
+                <spin value="1" default-value="1" min="1" max="500" name="MultiPV" type="SPIN"/>
+                <spin value="20" default-value="20" min="0" max="20" name="Skill Level" type="SPIN"/>
+                <spin value="30" default-value="30" min="0" max="5000" name="Move Overhead" type="SPIN"/>
+                <spin value="20" default-value="20" min="0" max="5000" name="Minimum Thinking Time" type="SPIN"/>
+                <spin value="89" default-value="89" min="10" max="1000" name="Slow Mover" type="SPIN"/>
+                <spin value="0" default-value="0" min="0" max="10000" name="nodestime" type="SPIN"/>
+                <check value="false" default-value="false" name="UCI_Chess960" type="CHECK"/>
+                <string value="" default-value="" name="SyzygyPath" type="STRING"/>
+                <spin value="1" default-value="1" min="1" max="100" name="SyzygyProbeDepth" type="SPIN"/>
+                <check value="true" default-value="true" name="Syzygy50MoveRule" type="CHECK"/>
+                <spin value="6" default-value="6" min="0" max="6" name="SyzygyProbeLimit" type="SPIN"/>
+            </options>
+        </engine>
+        <engine name="Stockfish 8 64" author="T. Romstad, M. Costalba, J. Kiiski, G. Linscott">
+            <remote-client host="localhost" port="5000"/>
+            <options>
+                <string value="" default-value="" name="Debug Log File" type="STRING"/>
+                <spin value="0" default-value="0" min="-100" max="100" name="Contempt" type="SPIN"/>
+                <spin value="1" default-value="1" min="1" max="128" name="Threads" type="SPIN"/>
+                <spin value="16" default-value="16" min="1" max="1048576" name="Hash" type="SPIN"/>
+                <button name="Clear Hash" type="BUTTON"/>
+                <check value="false" default-value="false" name="Ponder" type="CHECK"/>
+                <spin value="1" default-value="1" min="1" max="500" name="MultiPV" type="SPIN"/>
+                <spin value="20" default-value="20" min="0" max="20" name="Skill Level" type="SPIN"/>
+                <spin value="30" default-value="30" min="0" max="5000" name="Move Overhead" type="SPIN"/>
+                <spin value="20" default-value="20" min="0" max="5000" name="Minimum Thinking Time" type="SPIN"/>
+                <spin value="89" default-value="89" min="10" max="1000" name="Slow Mover" type="SPIN"/>
+                <spin value="0" default-value="0" min="0" max="10000" name="nodestime" type="SPIN"/>
+                <check value="false" default-value="false" name="UCI_Chess960" type="CHECK"/>
+                <string value="" default-value="" name="SyzygyPath" type="STRING"/>
+                <spin value="1" default-value="1" min="1" max="100" name="SyzygyProbeDepth" type="SPIN"/>
+                <check value="true" default-value="true" name="Syzygy50MoveRule" type="CHECK"/>
+                <spin value="6" default-value="6" min="0" max="6" name="SyzygyProbeLimit" type="SPIN"/>
+            </options>
+        </engine>
+    </engines>
+    <lastGameSetup random-color="false">
+        <white name="Unknown" color="WHITE" time="120000"/>
+        <black name="Unknown" color="BLACK" time="120000"/>
+    </lastGameSetup>
+    <viewLegalMoves>true</viewLegalMoves>
+    <viewAttacks>true</viewAttacks>
+    <viewLastMove>true</viewLastMove>
+    <theme>wood</theme>
+    <enginesAlwaysRegisterLater>true</enginesAlwaysRegisterLater>
+</configuration>
