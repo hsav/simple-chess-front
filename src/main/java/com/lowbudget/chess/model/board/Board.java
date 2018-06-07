@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * <p>An abstraction of a chess board.</p>
  * <p>A board implementation aims to support a GUI application with all the information it needs to display the chess
- * board's status i.e. chess moves, attacks, pins etc or even play a real chess game.</p>
+ * board's status i.e. chess moves, attacks, pins etc.</p>
  * <p>There are various representations of a chess board (i.e. array, 0x88, bit-boards etc), however as far as our
  * application is concerned a board needs to support the methods declared in this interface.</p>
  * <p>The coordinate system used for ranks and files assumes a bottom-top (ranks increase as we go up), left-right
@@ -129,10 +129,10 @@ public interface Board {
 
 	/**
 	 * <p>Finds the legal moves for the specified piece from its current square.</p>
-	 * <p>The resulted list consists only legal moves.</p>
+	 * <p>The resulted list consists of only legal moves.</p>
 	 * @param piece the piece to find the moves for
 	 * @param from  the current square of the piece
-	 * @return a list legal moves for the piece specified
+	 * @return a list of legal moves for the piece specified
 	 */
 	List<Move> findLegalMoves(Piece piece, Square from);
 
