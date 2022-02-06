@@ -25,6 +25,7 @@
 package com.lowbudget.chess.front.swing.components.views;
 
 import com.lowbudget.chess.front.app.UIApplication;
+import com.lowbudget.chess.model.PlayerColor;
 import com.lowbudget.common.Messages;
 import com.lowbudget.chess.front.swing.ComponentNames;
 import com.lowbudget.chess.front.swing.actions.Actions;
@@ -46,6 +47,9 @@ class GameWindowView extends JPanel {
 	/** References to split panes so we can set their divider locations after this component is created */
 	private final JSplitPane rightBottom;
 	private final JSplitPane mainPane;
+
+	private final TimeControlView topTimeControl;
+	private final TimeControlView bottomTimeControl;
 
 	GameWindowView(UIApplication application, Actions actions, BoardPainter painter) {
 
@@ -70,8 +74,8 @@ class GameWindowView extends JPanel {
 		rightPane.setLayout(new BorderLayout());
 
 		// RIGHT_TOP
-		TimeControlView timeControlView = new TimeControlView(application);
-		rightPane.add(timeControlView, BorderLayout.NORTH);
+		//TimeControlView timeControlView = new TimeControlView(application);
+		//rightPane.add(timeControlView, BorderLayout.NORTH);
 
 		// RIGHT_BOTTOM_TOP
 		MoveListView moveListView = new MoveListView(application);
@@ -91,7 +95,24 @@ class GameWindowView extends JPanel {
 		// MAIN_LEFT
 		BoardBackgroundView leftPane = new BoardBackgroundView(application, painter);
 		BoardView boardView = new BoardView(application, ComponentNames.BOARD_GAME_VIEW, application.getGameModel(), painter, new Dimension(500, 500));
-		leftPane.add(boardView);
+
+		// The main left areas consists of:
+		// - the top time control
+		// - the actual board
+		// - the bottom time control
+		topTimeControl = new TimeControlView(application, PlayerColor.BLACK);
+
+		GridBagConstraints c = new GridBagConstraints();
+		c.gridx = GridBagConstraints.CENTER;
+		c.gridy = GridBagConstraints.CENTER;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		leftPane.add(topTimeControl, c);
+
+		c.gridy = GridBagConstraints.RELATIVE;
+		leftPane.add(boardView, c);
+
+		bottomTimeControl = new TimeControlView(application, PlayerColor.WHITE);
+		leftPane.add(bottomTimeControl, c);
 
 		mainPane.setLeftComponent(new JScrollPane(leftPane));
 		mainPane.setRightComponent(rightPane);
@@ -101,13 +122,40 @@ class GameWindowView extends JPanel {
 		add(createTopToolbar(actions), BorderLayout.NORTH);
 		add(mainPane, BorderLayout.CENTER);
 
+		// synchronize the state of the time controls with the board's flipped status
+		flipTimeControls(application.isBoardFlipped());
+
 		application.addModelListener(new UIApplication.ModelAdapter() {
 			@Override
 			public void onEngineInfoAvailable(String info) {
 				engineInfoArea.append(info + "\n");
 			}
 
+			@Override
+			public void onBoardFlipped(boolean isFlipped) {
+				// board is flipped, synchronize the rows
+				flipTimeControls(isFlipped);
+			}
 		});
+	}
+
+	private void flipTimeControls(boolean isFlipped) {
+		// take a reference to the texts before changing anything
+		TimeControlView whiteRow = topTimeControl.isWhite() ? topTimeControl : bottomTimeControl;
+		TimeControlView blackRow = topTimeControl.isWhite() ? bottomTimeControl : topTimeControl;
+		String whiteTime = whiteRow.getTime();
+		String blackTime = blackRow.getTime();
+		String whitePlayer = whiteRow.getPlayerName();
+		String blackPlayer = blackRow.getPlayerName();
+
+		// now set the values of the labels for both rows
+		if (isFlipped) {
+			topTimeControl.setInfo(PlayerColor.WHITE, whiteTime, whitePlayer);
+			bottomTimeControl.setInfo(PlayerColor.BLACK, blackTime, blackPlayer);
+		} else {
+			topTimeControl.setInfo(PlayerColor.BLACK, blackTime, blackPlayer);
+			bottomTimeControl.setInfo(PlayerColor.WHITE, whiteTime, whitePlayer);
+		}
 	}
 
 	void setDefaultDividerLocations() {

@@ -25,6 +25,7 @@
 package com.lowbudget.chess.model.board;
 
 import com.lowbudget.chess.model.Move;
+import com.lowbudget.chess.model.Square;
 import com.lowbudget.chess.model.board.array.ArrayBoard;
 import com.lowbudget.chess.model.board.array.MoveGenerator;
 
@@ -39,6 +40,12 @@ class Perft {
 		PerftTestMonitor monitor = new PerftTestMonitor(board, depth);
 		PerftResult result = perft(depth, board, monitor);
 		assertEquals(nodes, result.getNodes());
+	}
+
+	static void assertPerft(Board board, int depth, PerftResult expectedResult) {
+		PerftTestMonitor monitor = new PerftTestMonitor.CheckMonitor(board, depth);
+		PerftResult result = perft(depth, board, monitor);
+		assertEquals(expectedResult, result);
 	}
 
 	@SuppressWarnings({"SameParameterValue", "unused"})
@@ -70,12 +77,15 @@ class Perft {
 
 				Move last = board.getCurrentMove();
 				perftResult.add(last);
-				PerftResult result = perft(depth - 1, board, monitor);
-				perftResult.add(result);
 
-				board.undoMove(last);
-
-				monitor.onAfterMove(depth, last, result);
+//				if (!last.isCheckmate()) {
+					PerftResult result = perft(depth - 1, board, monitor);
+					perftResult.add(result);
+					board.undoMove(last);
+					monitor.onAfterMove(depth, last, result);
+//				} else {
+//					board.undoMove(last);
+//				}
 			}
 		} catch (Exception e) {
 			// re-throws the exception as a runtime one and will be re-caught at the higher depth
@@ -107,7 +117,7 @@ class Perft {
 		private int errorDepth;
 
 		final Map<Integer, String> messages = new TreeMap<>(DESCENDING);
-		private final Map<Integer, Move> moves = new HashMap<>();
+		protected final Map<Integer, Move> moves = new HashMap<>();
 
 		PerftTestMonitor(Board board, int startingDepth) {
 			this.startingDepth = startingDepth;
@@ -173,6 +183,45 @@ class Perft {
 			}
 
 		}
+
+		static class CheckMonitor extends PerftTestMonitor {
+
+			CheckMonitor(Board board, int startingDepth) {
+				super(board, startingDepth);
+			}
+
+			@Override
+			void onAvailableMoves(int depth, List<Move> allPossibleMoves) {
+//				Comparator<Move> c = Comparator.comparing(m -> m.getTo().fileName());
+//				allPossibleMoves.sort(c.reversed());
+//				allPossibleMoves.removeIf( move -> {
+//					switch (depth) {
+//						case 5:
+//							return move.getTo() != Square.F3 || !move.getPiece().isPawn();
+//						case 4: return move.getTo() != Square.E6 || !move.getPiece().isPawn();
+//						case 3: return move.getTo() != Square.G4 || !move.getPiece().isPawn();
+//						case 2: return move.getTo() != Square.H4 || !move.getPiece().isQueen();
+//						default:
+//							return false;
+//					}
+//				});
+			}
+
+			@Override
+			void onAfterMove(int depth, Move move, PerftResult perftResult) {
+				if (move.isCheckmate()) {
+					int d = depth;
+					while (--d > 0) {
+						moves.remove(d);
+					}
+
+					List<Move> played = new ArrayList<>(moves.values());
+					Collections.reverse(played);
+					System.out.println(move.toUCIString() + "\t" + played);
+
+				}
+			}
+		}
 	}
 
 	static class PerftResult {
@@ -234,6 +283,7 @@ class Perft {
 
 		@Override
 		public boolean equals(Object o) {
+
 			if (this == o) return true;
 			if (o == null || getClass() != o.getClass()) return false;
 			PerftResult that = (PerftResult) o;

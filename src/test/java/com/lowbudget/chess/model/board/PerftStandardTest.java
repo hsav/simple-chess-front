@@ -93,6 +93,7 @@ public class PerftStandardTest {
 //        PerftResult result = perft(depth, board);
 //        assertEquals(EXPECTED.get(depth), result);
 		assertPerft(board, depth, EXPECTED.get(depth).getNodes());
+//		assertPerft(board, depth, EXPECTED.get(depth));
 	}
 
 	/**

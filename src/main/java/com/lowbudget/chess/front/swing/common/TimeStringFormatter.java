@@ -60,9 +60,9 @@ public final class TimeStringFormatter {
 
 	/**
 	 * Formats a value in milliseconds either as a string in the format "00:00:00" (hours, minutes, seconds)
-	 * or in its human readable form i.e. "1 hour 3 seconds" which takes account of plural, skips any zero values etc.
+	 * or in its human-readable form i.e. "1 hour 3 seconds" which takes account of plural, skips any zero values etc.
 	 * @param millis the time to format in millis
-	 * @param isHumanReadable if {@code true} the time will be formatted using the human readable format, otherwise
+	 * @param isHumanReadable if {@code true} the time will be formatted using the human-readable format, otherwise
 	 *                      the "00:00:00" format will be used
 	 * @return the formatted string of the milliseconds specified
 	 */
@@ -74,7 +74,12 @@ public final class TimeStringFormatter {
 		long seconds = TimeUnit.MILLISECONDS.toSeconds(remainingMillis);
 
 		if (!isHumanReadable) {
-			return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+			String format = "%02d:%02d";
+			if (hours > 0) {
+				format = "%02d:" + format;
+				return String.format(format, hours, minutes, seconds);
+			}
+			return String.format(format, minutes, seconds);
 		}
 
 		List<String> formats = new ArrayList<>();

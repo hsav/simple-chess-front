@@ -30,6 +30,7 @@ import com.lowbudget.chess.front.app.model.GameModel.GameModelAdapter;
 import com.lowbudget.chess.front.swing.SwingUIApplication;
 import com.lowbudget.chess.front.swing.common.UIUtils;
 import com.lowbudget.chess.model.Piece;
+import com.lowbudget.chess.model.PlayerColor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,105 +38,61 @@ import java.awt.*;
 import static com.lowbudget.chess.front.swing.common.TimeStringFormatter.formatTime;
 
 /**
- * <p>Displays the players' time controls.</p>
- * <p>This view uses a tabular layout of two rows where the information of each player is displayed. The information
- * consists of an icon that indicates the player's color, the time left in seconds and the player's name.</p>
- * <p>The view has the ability to flip the rows when the board is flipped and adopt a "enabled"/"disabled" look
- * depending on the game status (i.e. the control disabled its labels when the time is not running).</p>
+ * <p>Displays a single players' time controls.</p>
+ * <p>The information consists of an icon that indicates the player's color, the time left in seconds
+ * and the player's name.</p>
  */
 class TimeControlView extends JPanel {
 
-	/** The top row of the view **/
-	private final TimeControlRow topRow;
-
-	/** The bottom row of the view **/
-	private final TimeControlRow bottomRow;
+	/**
+	 * The panel displaying the actual information
+	 **/
+	private final TimeControlRow row;
 
 	@SuppressWarnings("WeakerAccess")
-	public TimeControlView(UIApplication application) {
-		// use a grid layout of two rows
-		setLayout(new GridLayout(2, 1));
+	public TimeControlView(UIApplication application, PlayerColor playerColor) {
+
+		// use a grid layout of one row
+		setLayout(new GridLayout(1, 1));
 
 		// by default black is on the top and white is on the bottom
-		topRow = new TimeControlRow(application, false);
-		bottomRow = new TimeControlRow(application, true);
-		add(topRow);
-		add(bottomRow);
-
-		// synchronize the rows with the flip status of the board
-		refreshRows(application.isBoardFlipped());
+		row = new TimeControlRow(application, PlayerColor.WHITE == playerColor);
+		add(row);
 
 		// listen for application changes
-		application.addModelListener( new DefaultModelListener() );
+		application.addModelListener(new DefaultModelListener());
 
 		// listen for game status changes
-		application.getGameModel().addGameModelListener( new DefaultGameModelListener() );
+		application.getGameModel().addGameModelListener(new DefaultGameModelListener());
+	}
+
+	public boolean isWhite() {
+		return row.isWhite;
+	}
+
+	public String getTime() {
+		return this.row.getTime();
+	}
+
+	public String getPlayerName() {
+		return this.row.getPlayerName();
+	}
+
+	public void setInfo(PlayerColor color, String time, String playerName) {
+		row.setWhite(color.isWhite())
+			.setTime(time)
+			.setPlayerName(playerName)
+			.refreshIcon();
 	}
 
 	/**
-	 * Returns the row that represents the information of the white player. This is the bottom row by default but
-	 * it becomes the top row if the board is flipped
-	 */
-	private TimeControlRow getWhiteRow() {
-		return topRow.isWhite ? topRow : bottomRow;
-	}
-
-	/**
-	 *	Returns the row that represents the information of the black player
-	 */
-	private TimeControlRow getBlackRow() {
-		return topRow.isWhite ? bottomRow : topRow;
-	}
-
-	/**
-	 * Synchronizes the rows with the flip status specified
-	 * @param flipped the flipped status of the board - if {@code true} white is on the top, otherwise white is on
-	 *                the bottom
-	 */
-	private void refreshRows(boolean flipped) {
-		// take a reference to the texts before changing anything
-		String whiteTime = getWhiteRow().getTime();
-		String blackTime = getBlackRow().getTime();
-		String whitePlayer = getWhiteRow().getPlayerName();
-		String blackPlayer = getBlackRow().getPlayerName();
-
-		// now set the values of the labels for both rows
-		if (flipped) {
-			topRow.setWhite(true)
-					.setTime(whiteTime)
-					.setPlayerName(whitePlayer)
-					.refreshIcon();
-			bottomRow.setWhite(false)
-					.setTime(blackTime)
-					.setPlayerName(blackPlayer)
-					.refreshIcon();
-		} else {
-			topRow.setWhite(false)
-					.setTime(blackTime)
-					.setPlayerName(blackPlayer)
-					.refreshIcon();
-			bottomRow.setWhite(true)
-					.setTime(whiteTime)
-					.setPlayerName(whitePlayer)
-					.refreshIcon();
-		}
-	}
-
-	/**
-	 * Default model listener so we can keep up with model's changes
+	 * Default model listener to listen for model's theme changes
 	 */
 	private class DefaultModelListener extends UIApplication.ModelAdapter {
 		@Override
 		public void onThemeChanged(String newTheme) {
 			// theme changed reload the white and black icons
-			topRow.loadThemeIcons(newTheme);
-			bottomRow.loadThemeIcons(newTheme);
-		}
-
-		@Override
-		public void onBoardFlipped(boolean isFlipped) {
-			// board is flipped, synchronize the rows
-			refreshRows(isFlipped);
+			row.loadThemeIcons(newTheme);
 		}
 	}
 
@@ -143,77 +100,68 @@ class TimeControlView extends JPanel {
 
 		@Override
 		public void onGameStarted(Game game) {
-			TimeControlRow whiteRow = getWhiteRow();
-			TimeControlRow blackRow = getBlackRow();
+			String name = row.isWhite ? game.getWhiteName() : game.getBlackName();
+			long time = row.isWhite ? game.getWhiteTime() : game.getBlackTime();
 
-			whiteRow.setEnabledLabels(true)
-					.setPlayerName(game.getWhiteName())
-					.setTime(game.getWhiteTime());
-
-			blackRow.setEnabledLabels(true)
-					.setPlayerName(game.getBlackName())
-					.setTime(game.getBlackTime());
+			row.setEnabledLabels(true)
+				.setPlayerName(name)
+				.setTime(time);
 		}
 
 		@Override
 		public void onGameStopped(Game game) {
-			topRow.setEnabledLabels(false);
-			bottomRow.setEnabledLabels(false);
+			row.setEnabledLabels(false);
 		}
 
 		@Override
 		public void onGamePaused(Game game) {
-			topRow.setEnabledLabels(false);
-			bottomRow.setEnabledLabels(false);
+			row.setEnabledLabels(false);
 		}
 
 		@Override
 		public void onGameResumed(Game game) {
-			topRow.setEnabledLabels(true);
-			bottomRow.setEnabledLabels(true);
+			row.setEnabledLabels(true);
 		}
 
 		@Override
 		public void onGameClosed(Game game) {
-			topRow.clear();
-			bottomRow.clear();
+			row.clear();
 		}
 
 		@Override
 		public void onGameLoaded(Game game) {
-			getWhiteRow().setPlayerName(game.getWhiteName());
-			getBlackRow().setPlayerName(game.getBlackName());
+			row.setPlayerName(row.isWhite ? game.getWhiteName() : game.getBlackName());
 		}
 
 		@Override
 		public void onTimeControlChanged(long whiteRemainingTime, long blackRemainingTime) {
 			// time control changed, update the timings
-			getWhiteRow().setTime(whiteRemainingTime);
-			getBlackRow().setTime(blackRemainingTime);
+			row.setTime(row.isWhite ? whiteRemainingTime : blackRemainingTime);
 		}
 
 		@Override
 		public void onGameInformationChanged(String whiteName, String blackName) {
 			// player names have changed, re-set them
-			getWhiteRow().setPlayerName(whiteName);
-			getBlackRow().setPlayerName(blackName);
+			row.setPlayerName(row.isWhite ? whiteName : blackName);
 		}
 	}
 
 	/**
 	 * <p>Loads the icon that corresponds to a piece's type by taking into account the specified theme</p>
 	 * <p>The icon is scaled to a hard-coded value of {@code 48} pixels if it is larger/smaller</p>
+	 *
 	 * @param theme the theme for which to load the icon
 	 * @param piece the piece for the type of which we should load the icon
 	 * @return an {@link ImageIcon} that corresponds to the {@code piece}'s type for the {@code theme} specified
 	 */
 	private static ImageIcon getIcon(String theme, Piece piece) {
 		String imageName = SwingUIApplication.getPieceImageName(theme, piece);
-		return new ImageIcon( UIUtils.getImage(imageName, 48) );
+		return new ImageIcon(UIUtils.getImage(imageName, 32));
 	}
 
 	/**
 	 * Sets the alignment of the specified labels to {@link SwingConstants#CENTER}
+	 *
 	 * @param label the label to set the alignment for
 	 */
 	private static void centerLabel(JLabel label) {
@@ -229,17 +177,24 @@ class TimeControlView extends JPanel {
 		private final JLabel timeLabel = new JLabel();
 		private final JLabel nameLabel = new JLabel();
 
-		/** Indicates if this row represents the white player **/
+		/**
+		 * Indicates if this row represents the white player
+		 **/
 		private boolean isWhite;
 
-		/** The current icon for thw white player **/
+		/**
+		 * The current icon for thw white player
+		 **/
 		private ImageIcon whiteIcon;
 
-		/** The current icon for thw black player **/
+		/**
+		 * The current icon for thw black player
+		 **/
 		private ImageIcon blackIcon;
 
 		/**
 		 * Creates a new row for the player specified
+		 *
 		 * @param white if {@code true} the new row will represent the white player, otherwise it will represent the
 		 *              black player
 		 */
@@ -265,9 +220,10 @@ class TimeControlView extends JPanel {
 
 			// inner panel to display the player's name and time
 			JPanel playerPanel = new JPanel(new BorderLayout());
-			playerPanel.setBorder(BorderFactory.createEmptyBorder());
-			playerPanel.add(nameLabel, BorderLayout.PAGE_START);
-			playerPanel.add(timeLabel, BorderLayout.CENTER);
+			playerPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+			playerPanel.add(nameLabel, BorderLayout.LINE_START);
+			playerPanel.add(timeLabel, BorderLayout.LINE_END);
+
 
 			add(playerPanel, BorderLayout.CENTER);
 
@@ -277,6 +233,7 @@ class TimeControlView extends JPanel {
 		/**
 		 * Loads the white and black icons for the theme specified. Note that this method depends on the value
 		 * of {@link #isWhite}
+		 *
 		 * @param theme the theme to load the icons for
 		 */
 		void loadThemeIcons(String theme) {
@@ -309,7 +266,7 @@ class TimeControlView extends JPanel {
 		}
 
 		void setTime(long millis) {
-			timeLabel.setText( formatTime(millis) );
+			timeLabel.setText(formatTime(millis));
 		}
 
 		String getTime() {
